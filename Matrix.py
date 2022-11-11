@@ -101,5 +101,3 @@ class Matrix:
         for row in self.A:
             for item in row:
                 yield item
-
-    parenthesis
