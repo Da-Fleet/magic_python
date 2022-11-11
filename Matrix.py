@@ -96,3 +96,8 @@ class Matrix:
             i = key[0]
             j = key[1]
             self.A[i][j] = value
+
+    def __iter__(self):
+        for row in self.A:
+            for item in row:
+                yield item)
