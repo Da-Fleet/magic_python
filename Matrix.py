@@ -100,4 +100,6 @@ class Matrix:
     def __iter__(self):
         for row in self.A:
             for item in row:
-                yield item)
+                yield item
+
+    parenthesis
