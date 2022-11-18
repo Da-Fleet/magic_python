@@ -1,18 +1,10 @@
+import re
+
 class Matrix:
     def __init__(self, dims, fill):
         self.rows = dims[0]
         self.cols = dims[1]
         self.A = [[fill] * self.cols for i in range(self.rows)]
-        self.create_indexing_attributes()
-
-    def create_indexing_attributes(self):
-        for i in range(self.rows):
-            for j in range(self.cols):
-                '''
-                BUG: if i change the matrix this will return ceros, change it without
-                having to change the value every time i make a change in the matrix
-                '''
-                self.__dict__['_' + str(i) + '_' + str(j)] = self.A[i][j]
 
     def __str__(self):
         m = len(self.A) # Get the first dimension
@@ -110,8 +102,35 @@ class Matrix:
             self.A[i][j] = value
             self.__dict__['_' + str(i) + '_' + str(j)] = self.A[i][j]
 
-
     def __iter__(self):
         for row in self.A:
             for item in row:
                 yield item
+
+    def __getattr__(self, item):
+        match = re.match(r'_(\d+)_(\d+)$', item)
+        if match:
+            i = int(match.group(1))
+            j = int(match.group(2))
+            if (i >= self.rows or i < 0) and (j >= self.cols or j < 0):
+                raise Exception('Index out of range')
+            return self.A[i][j]
+        match = re.match(r'as_(\S+)$', item)
+        if match:
+            temp = Matrix(self.rows, self.columns)
+            
+            for i, item in enumerate(self):
+                temp[i // self.columns, i % self.columns] = eval(match.groups()[0]+"("+str(item)+")")
+                
+            return lambda: temp
+        return self.__getattribute__(item)
+    
+    def __setattr__(self, item, value):
+        match = re.match( r'as_(\S+)$', item)
+        if match:
+            i = int(match.groups()[0])
+            j = int(match.groups()[1])
+            if(i < 0 or i >= self.rows or j < 0 or j >= self.columns):
+                raise Exception("Indices fuera del rango de la Matriz")
+            self.values[i][j] = value
+        super().__setattr__(item,value)
