@@ -23,6 +23,10 @@ class Matrix:
 
         # Check if the other object is of type Matrix
         if isinstance(other, Matrix):
+
+            if self.rows != other.rows or self.cols != other.cols:
+                raise Exception("The number of rows and columns of both matrices must be equal")
+
             # Add the corresponding element of 1 matrices to another
             for i in range(self.rows):
                 for j in range(self.cols):
@@ -35,18 +39,68 @@ class Matrix:
                 for j in range(self.cols):
                     C.A[i][j] = self.A[i][j] + other
 
-        # TODO: Remove this when fixed
-        self.create_indexing_attributes()
+        return C
+
+    def __sub__(self, other):
+        # Create a new matrix
+        C = Matrix(dims=(self.rows, self.cols), fill=0)
+
+        # Check if the other object is of type Matrix
+        if isinstance(other, Matrix):
+
+            if self.rows != other.rows or self.cols != other.cols:
+                raise Exception("The number of rows and columns of both matrices must be equal")
+
+            # Add the corresponding element of 1 matrices to another
+            for i in range(self.rows):
+                for j in range(self.cols):
+                    C.A[i][j] = self.A[i][j] - other.A[i][j]
+
+            # If the other object is a scaler
+        elif isinstance(other, (int, float)):
+            # Add that constant to every element of A
+            for i in range(self.rows):
+                for j in range(self.cols):
+                    C.A[i][j] = self.A[i][j] - other
+
         return C
 
     # Right addition can be done by calling left addition
     def __radd__(self, other):
         return self.__add__(other)
 
-    def __mul__(self, other):  # pointwise multiplication
+    def __mul__(self, other):
+
+        if isinstance(other, Matrix):
+            if self.cols != other.rows:
+                raise Exception("The number of columns of first matrix must be equal to the number of rows of the "
+                                "second")
+            C = Matrix(dims=(self.rows, other.cols), fill=0)
+
+            # Multiply the elements in the same row of the first matrix
+            # to the elements in the same col of the second matrix
+            for i in range(self.rows):
+                for j in range(other.cols):
+                    acc = 0
+
+                    for k in range(self.cols):
+                        acc += self.A[i][k] * other.A[k][j]
+
+                    C.A[i][j] = acc
+
+        return C
+
+    # Point-wise multiplication is also commutative
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __matmul__(self, other):  # point wise multiplication
 
         C = Matrix(dims=(self.rows, self.cols), fill=0)
         if isinstance(other, Matrix):
+
+            if self.rows != other.rows or self.cols != other.cols:
+                raise Exception("The number of rows and columns of both matrices must be equal")
 
             for i in range(self.rows):
                 for j in range(self.cols):
@@ -59,33 +113,6 @@ class Matrix:
                 for j in range(self.cols):
                     C.A[i][j] = self.A[i][j] * other
 
-        # TODO: Remove this when fixed
-        self.create_indexing_attributes()
-        return C
-
-    # Point-wise multiplication is also commutative
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    # matrix-matrix multiplication
-    def __matmul__(self, other):
-
-        if isinstance(other, Matrix):
-            C = Matrix(dims=(self.rows, self.cols), fill=0)
-
-            # Multiply the elements in the same row of the first matrix
-            # to the elements in the same col of the second matrix
-            for i in range(self.rows):
-                for j in range(self.cols):
-                    acc = 0
-
-                    for k in range(self.rows):
-                        acc += self.A[i][k] * other.A[k][j]
-
-                    C.A[i][j] = acc
-
-        # TODO: Remove this when fixed
-        self.create_indexing_attributes()
         return C
 
     def __getitem__(self, key):
