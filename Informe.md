@@ -5,7 +5,7 @@
 
 -Jesus Aldair Alfonso Perez
 
--Leismael Sosa
+-Leismael Sosa Hernández
 
 -Mauro Jose Bolado Vizoso
 
@@ -166,7 +166,8 @@ def __getattr__(self, item):
     return self.__getattribute__(item)
 ```
 
-## 6-) 
+En esta implementación utilizamos la función ```eval()```, que interpreta una cadena de texto y la ejecuta como código python.
+## 6-) Funcionamiento de super y orden de resolución de métodos en python
 
 ### Super:
 
@@ -209,6 +210,3 @@ class X(A, B): pass
 class Y(B, A): pass
 class Z(X, Y): pass
 ```
-
-### Función eval()
-
