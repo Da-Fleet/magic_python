@@ -1,5 +1,6 @@
 import re
 
+
 class Matrix:
     def __init__(self, dims, fill):
         self.rows = dims[0]
@@ -7,29 +8,28 @@ class Matrix:
         self.A = [[fill] * self.cols for i in range(self.rows)]
 
     def __str__(self):
-        m = len(self.A) # Get the first dimension
-        mtxStr = ''
-        mtxStr += '------------- output -------------\n'
-        for i in range(m):
-            mtxStr += ('|' + ', '.join( map(lambda x :'{0:8.3f}'.format(x), self.A[i])) + '| \n')
+        value_return = ""
 
-        mtxStr += '----------------------------------'
+        for i in range(self.rows):
+            for j in range(self.cols):
+                value_return = value_return + str(self[i, j]) + " "
+            value_return = value_return + "\n"
 
-        return mtxStr
+        return value_return
 
     def __add__(self, other):
         # Create a new matrix
-        C = Matrix( dims = (self.rows, self.cols), fill = 0)
+        C = Matrix(dims=(self.rows, self.cols), fill=0)
 
         # Check if the other object is of type Matrix
-        if isinstance (other, Matrix):
+        if isinstance(other, Matrix):
             # Add the corresponding element of 1 matrices to another
             for i in range(self.rows):
                 for j in range(self.cols):
                     C.A[i][j] = self.A[i][j] + other.A[i][j]
 
             # If the other object is a scaler
-        elif isinstance (other, (int, float)):
+        elif isinstance(other, (int, float)):
             # Add that constant to every element of A
             for i in range(self.rows):
                 for j in range(self.cols):
@@ -45,7 +45,7 @@ class Matrix:
 
     def __mul__(self, other):  # pointwise multiplication
 
-        C = Matrix( dims = (self.rows, self.cols), fill = 0)
+        C = Matrix(dims=(self.rows, self.cols), fill=0)
         if isinstance(other, Matrix):
 
             for i in range(self.rows):
@@ -71,7 +71,7 @@ class Matrix:
     def __matmul__(self, other):
 
         if isinstance(other, Matrix):
-            C = Matrix( dims = (self.rows, self.cols), fill = 0)
+            C = Matrix(dims=(self.rows, self.cols), fill=0)
 
             # Multiply the elements in the same row of the first matrix
             # to the elements in the same col of the second matrix
@@ -93,7 +93,6 @@ class Matrix:
             i = key[0]
             j = key[1]
             return self.A[i][j]
-
 
     def __setitem__(self, key, value):
         if isinstance(key, tuple):
@@ -117,20 +116,20 @@ class Matrix:
             return self.A[i][j]
         match = re.match(r'as_(\S+)$', item)
         if match:
-            temp = Matrix(self.rows, self.columns)
-            
+            temp = Matrix((self.rows, self.cols), 0)
+
             for i, item in enumerate(self):
-                temp[i // self.columns, i % self.columns] = eval(match.groups()[0]+"("+str(item)+")")
-                
+                temp[i // self.cols, i % self.cols] = eval(match.groups()[0] + "(" + str(item) + ")")
+
             return lambda: temp
         return self.__getattribute__(item)
-    
+
     def __setattr__(self, item, value):
-        match = re.match( r'as_(\S+)$', item)
+        match = re.match(r'as_(\S+)$', item)
         if match:
             i = int(match.groups()[0])
             j = int(match.groups()[1])
-            if(i < 0 or i >= self.rows or j < 0 or j >= self.columns):
+            if i < 0 or i >= self.rows or j < 0 or j >= self.columns:
                 raise Exception("Indices fuera del rango de la Matriz")
             self.values[i][j] = value
-        super().__setattr__(item,value)
+        super().__setattr__(item, value)
