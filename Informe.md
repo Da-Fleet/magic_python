@@ -41,44 +41,73 @@ La definición de operadores en python, como es el caso de los operadores de __s
 ```python
 def __add__(self, other):
     # Create a new matrix
-    C = Matrix( dims = (self.rows, self.cols), fill = 0)
+    C = Matrix(dims=(self.rows, self.cols), fill=0)
 
     # Check if the other object is of type Matrix
-    if isinstance (other, Matrix):
+    if isinstance(other, Matrix):
+
+        if self.rows != other.rows or self.cols != other.cols:
+            raise Exception("The number of rows and columns of both matrices must be equal")
+
         # Add the corresponding element of 1 matrices to another
         for i in range(self.rows):
             for j in range(self.cols):
                 C.A[i][j] = self.A[i][j] + other.A[i][j]
 
     # If the other object is a scaler
-    elif isinstance (other, (int, float)):
-    # Add that constant to every element of A
-    for i in range(self.rows):
+    elif isinstance(other, (int, float)):
+        # Add that constant to every element of A
+        for i in range(self.rows):
             for j in range(self.cols):
                 C.A[i][j] = self.A[i][j] + other
+
+    return C
+
+def __sub__(self, other):
+    # Create a new matrix
+    C = Matrix(dims=(self.rows, self.cols), fill=0)
+
+    # Check if the other object is of type Matrix
+    if isinstance(other, Matrix):
+
+        if self.rows != other.rows or self.cols != other.cols:
+            raise Exception("The number of rows and columns of both matrices must be equal")
+
+        # Add the corresponding element of 1 matrices to another
+        for i in range(self.rows):
+            for j in range(self.cols):
+                C.A[i][j] = self.A[i][j] - other.A[i][j]
+
+    # If the other object is a scaler
+    elif isinstance(other, (int, float)):
+        # Add that constant to every element of A
+        for i in range(self.rows):
+            for j in range(self.cols):
+                C.A[i][j] = self.A[i][j] - other
 
     return C
 ```
 
 ```python
-def __mul__(self, other):  # pointwise multiplication
+def __mul__(self, other):
 
-    C = Matrix( dims = (self.rows, self.cols), fill = 0)
     if isinstance(other, Matrix):
+        if self.cols != other.rows:
+            raise Exception("The number of columns of first matrix must be equal to the number of rows of the "
+                            "second")
+        C = Matrix(dims=(self.rows, other.cols), fill=0)
 
+        # Multiply the elements in the same row of the first matrix
+        # to the elements in the same col of the second matrix
         for i in range(self.rows):
-            for j in range(self.cols):
-                C.A[i][j] = self.A[i][j] * other.A[i][j]
+            for j in range(other.cols):
+                acc = 0
 
-        # Scaler multiplication
-    elif isinstance(other, (int, float)):
+                for k in range(self.cols):
+                    acc += self.A[i][k] * other.A[k][j]
 
-        for i in range(self.rows):
-            for j in range(self.cols):
-                C.A[i][j] = self.A[i][j] * other
+                C.A[i][j] = acc
 
-    # TODO: Remove this when fixed
-    self.create_indexing_attributes()
     return C
 ```
 
@@ -116,23 +145,21 @@ def __getattr__(self, item):
         return self.A[i][j]
     match = re.match(r'as_(\S+)$', item)
     if match:
-        temp = Matrix(self.rows, self.columns)
-            
+        temp = Matrix((self.rows, self.cols), 0)
         for i, item in enumerate(self):
-            temp[i // self.columns, i % self.columns] = eval(match.groups()[0]+"("+str(item)+")")
-                
+            temp[i // self.cols, i % self.cols] = eval(match.groups()[0] + "(" + str(item) + ")")
         return lambda: temp
     return self.__getattribute__(item)
-    
+
 def __setattr__(self, item, value):
-    match = re.match( r'as_(\S+)$', item)
+    match = re.match(r'as_(\S+)$', item)
     if match:
         i = int(match.groups()[0])
         j = int(match.groups()[1])
-        if(i < 0 or i >= self.rows or j < 0 or j >= self.columns):
+        if i < 0 or i >= self.rows or j < 0 or j >= self.columns:
             raise Exception("Indices fuera del rango de la Matriz")
         self.values[i][j] = value
-    super().__setattr__(item,value)
+    super().__setattr__(item, value)
 ```
 
 ## 4-) Iterador
@@ -155,13 +182,20 @@ suponiendo que el tipo ```type``` contiene una función que permite convertir de
 
 ```python
 def __getattr__(self, item):
+    match = re.match(r'_(\d+)_(\d+)$', item)
+    if match:
+        i = int(match.group(1))
+        j = int(match.group(2))
+        if (i >= self.rows or i < 0) and (j >= self.cols or j < 0):
+            raise Exception('Index out of range')
+        return self.A[i][j]
     match = re.match(r'as_(\S+)$', item)
     if match:
-        temp = Matrix(self.rows, self.cols)
-            
+        temp = Matrix((self.rows, self.cols), 0)
+
         for i, item in enumerate(self):
-            temp[i // self.columns, i % self.cols] = eval(match.groups()[0]+"("+str(item)+")")
-                
+            temp[i // self.cols, i % self.cols] = eval(match.groups()[0] + "(" + str(item) + ")")
+
         return lambda: temp
     return self.__getattribute__(item)
 ```
